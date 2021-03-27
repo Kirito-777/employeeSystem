@@ -1,12 +1,20 @@
 <template>
   <div class="users-table">
+        <el-form inline label-width="80px" class="noform" >
+          <el-form-item label="用户名">
+            <el-input type="text" v-model="username" placeholder="输入用户名"></el-input>
+          </el-form-item>
+          <el-form-item>
+            <el-button type="primary"  @click="searchUser">搜索</el-button>
+          </el-form-item>
+        </el-form>
         <!--stripe	是否为斑马纹  v-loading在请求数据未返回的时间有个加载的图案,提高用户体验-->
         <el-table :data="table" height="100%"  stripe v-loading="config.loading">
             <!--第一行为序号 默认写死-->
             <el-table-column label="序号" >
                 <!--slot-scope="scope" 这里取到当前单元格,scope.$index就是索引 默认从0开始这里从1开始-->
                 <template slot-scope="scope">
-                    <span style="margin-left: 10px">{{ (config.page - 1) * 8 + scope.$index + 1 }}</span>
+                    <span style="margin-left: 10px">{{ (config.page - 1) * 7 + scope.$index + 1 }}</span>
                 </template>
             </el-table-column>
             <el-table-column
@@ -41,7 +49,7 @@
             </el-table-column>
         </el-table>
         <!--分页-->
-        <el-pagination class="pager" layout="total, prev, pager, next, jumper" :total="config.total" :current-page.sync="config.page" @current-change="changePage" :page-size="8"></el-pagination>
+        <el-pagination class="pager" layout="total, prev, pager, next, jumper" :total="config.total" :current-page.sync="config.page" @current-change="changePage" :page-size="7"></el-pagination>
         <!-- <el-button type="primary" v-show="isBack" style="margin-left:10% ; margin-top : 15px " @click="back">返回</el-button> -->
     </div>
 </template>
@@ -51,29 +59,12 @@
 // import { delete } from 'vue/types/umd';
   export default {
     name: 'Users',
-    beforeCreate() {
-      let id=sessionStorage.getItem("id")
-      // console.log(id);
-      axios.post("http://localhost:8088/staffManage/getusers?id="+id).then(res => {
-        // console.log(res.data.data.pageInfo.list[2].username);
-        // this.table = res.data.data.pageInfo.list[1]
-        // console.log(res);
-        this.table = res.data.data.pageInfo.list.map((item) => {
-              // console.log(item);
-              // if(item.username == sessionStorage.getItem("username")){
-              //   return ''
-              // }
-              return item;
-            });
-        this.config.total = res.data.data.pageInfo.total;
-        this.config.loading = false;
-      }).catch(res => {
-        console.log("读取失败");
-      })
+    mounted() {
+      this.getAllusers();
     },
     data(){
       return {
-        // username:sessionStorage.getItem("username"),
+        username: '',
         pow1: '用户',
         pow2: '管理员',
         table: [],
@@ -107,6 +98,26 @@
       }
     },
     methods: {
+      getAllusers() {
+        let id=sessionStorage.getItem("id")
+        // console.log(id);
+        axios.post("http://localhost:8088/staffManage/getusers?id="+id).then(res => {
+          // console.log(res.data.data.pageInfo.list[2].username);
+          // this.table = res.data.data.pageInfo.list[1]
+          // console.log(res);
+          this.table = res.data.data.pageInfo.list.map((item) => {
+                // console.log(item);
+                // if(item.username == sessionStorage.getItem("username")){
+                //   return ''
+                // }
+                return item;
+              });
+          this.config.total = res.data.data.pageInfo.total;
+          this.config.loading = false;
+        }).catch(res => {
+          console.log("读取失败");
+        })
+      },
       changePage(page) {
         axios.post("http://localhost:8088/staffManage/getusers?page="+page).then(res => {
         
@@ -176,6 +187,32 @@
               });
             }                                 
           })
+      },
+      searchUser() {
+        // console.log(this.username);
+        if(this.username !== '') {
+          axios.post("http://localhost:8088/staffManage/getuser?username="+this.username).then(res => {
+            // this.table = {};
+            // console.log(res.data.data.user);
+            this.table[0].id = res.data.data.user.id;
+            this.table[0].username = res.data.data.user.username;
+            this.table[0].realname = res.data.data.user.realname;
+            this.table[0].power = res.data.data.user.power;
+            this.table[0].sex = res.data.data.user.sex;
+            // this.table[0].id = res.data.data.user.id;
+            this.config.total = 1;
+            this.config.loading = false;
+            this.table.length = 1;
+          }).catch(res => {
+            this.$message({
+                type: "error",
+                message: "没有找到该用户!",             
+              });
+          })
+        }else{
+          this.getAllusers();
+        }
+        
       }
     }
   }
@@ -183,7 +220,7 @@
 
 <style lang="scss" scoped>
     .users-table {
-        height: calc(100% - 82px);
+        height: calc(92% - 82px);
         margin: 10px 10px;
         position: relative;
         .pager {

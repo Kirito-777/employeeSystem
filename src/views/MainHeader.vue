@@ -3,11 +3,34 @@
     <p class="time">{{nowTime}}</p>
     <p class="date">{{nowDate}}</p>
     <h2 class="main-name">员工管理系统</h2>
-    <p class="user-name"><i class="el-icon-user-solid"></i>  用户名：{{$store.state.username}}</p>
-    <!-- <el-menu>
-      <el-submenu >
-        <template slot="title">用户名：{{$store.state.username}}</template>
-        <el-menu-item >个人中心</el-menu-item>
+    <!-- <p class="user-name" @click="go"><i class="el-icon-user-solid"></i>  用户名：{{$store.state.username}}
+    <i class="el-icon-arrow-down"></i></p> -->
+    <el-popover
+      placement="top-start"
+      title=""
+      width="150"
+      trigger="hover"
+      @show="show"
+      @hide="hide"
+      >
+      <el-menu class="elmenu">
+        <el-menu-item @click="goPer" class="elitem" aria-label="个人中心" >
+          个人中心
+        </el-menu-item>
+        <el-menu-item @click="goPass" class="elitem">
+          修改密码
+        </el-menu-item>
+      </el-menu>
+      <el-button type="text" slot="reference" class="user-name">用户名：{{$store.state.username}}<i :class="$store.state.amg"></i></el-button>
+    </el-popover>
+    <!-- <el-menu class="user-name " background-color="#45464b"
+  text-color="#fff">
+      <el-submenu index="1" class="user-name el-menu-demo">
+        <template slot="title">
+          <i class="el-icon-user-solid"></i>
+          <span>用户名：{{$store.state.username}}</span>
+        </template>
+        <el-menu-item index="Users" @click="go">个人中心</el-menu-item>
       </el-submenu>
     </el-menu> -->
     <p class="log-out" @click="logout"><i class="el-icon-switch-button"></i>退出系统</p>
@@ -21,16 +44,34 @@
       this.clear()
     },
     mounted() {
-      this.nowTimes()
+      this.nowTimes();
+    },
+    beforeCreate() {
+      sessionStorage.setItem("amg","el-icon-caret-bottom")
     },
     data() {
       return {
         // username: sessionStorage.getItem("username")
         nowTime: '',
-        nowDate: ''
+        nowDate: '',
+        amg: sessionStorage.getItem("amg")
       }
     },
     methods: {
+      show() {
+        this.$store.state.amg = "el-icon-caret-top";
+        sessionStorage.setItem("amg","el-icon-caret-top")
+      },
+      hide() {
+        this.$store.state.amg = "el-icon-caret-bottom";
+        sessionStorage.setItem("amg","el-icon-caret-bottom")
+      },
+      goPer() {
+        this.$router.push("/Personal");
+      },
+      goPass(){
+        this.$router.push("/Password");
+      },
       logout() {
         
         this.$confirm('此操作将退出系统, 是否继续?', '提示', {
@@ -112,16 +153,34 @@
   }
   .user-name {
     position: fixed;
-    right: 9%;
-    top: 0.5%;
+    font-size: 20px;
+    color: white;
+    /* background-color: #45464b; */
+    right: 8%;
+    top: 1.8%;
   }
   .log-out {
     position: fixed;
     right: 1%;
-    top: 1%;
+    top: 1.3%;
     padding: 2px 2px;
     font-size: 15px;
     /* border:1px solid #fff; */
     /* border-style:solid; */
+  }
+  .elmenu {
+    border-right: 0 ! important;
+    /* width: 10px ! important;
+    padding: 0 0 ! important;
+    border-right: none; */
+  }
+  /* .el-header {
+    padding: 0  !important;
+  } */
+  .elitem {
+    height: 30px;
+    line-height: 30px;
+    width: 100px ! important;
+    margin: 0 25px ! important;
   }
 </style>

@@ -20,7 +20,7 @@
       goFile(){
         var formData = new FormData();
         var formObj = new FormData(document.getElementById("formFile"));
-        console.log(formObj.get("fileInput"));
+        // console.log(formObj.get("fileInput"));
         formData.append("file",formObj.get("fileInput"));
         formData.append("name",2);
 
@@ -35,7 +35,7 @@
         })
         .then((res) => {
           // console.log(res.data);
-          console.log(res.data);
+          // console.log(res.data);
           if(res.data.code==100){
             var str = res.data.msg+"\r\n"+res.data.data.msg;
             alert(str);       
@@ -59,7 +59,13 @@
           }
                             
         }
-        );              
+        ).catch((reject) => {
+          this.$message({
+            type: "error",
+            message: "上传出错,请上传.xls文件！",
+          })
+          document.getElementById("formFile").reset()
+        })             
       }
     }
   }
@@ -74,7 +80,7 @@
    /* left: 50%; */
    /* transform: translateX(50%); */
    /* text-align: center; */
-   /* background-color: #e5eef3c9 !important; */
+   background-color: #f6f7f8 !important;
    /* box-shadow:0px 0px 2px #303642; */
  }
  .up {

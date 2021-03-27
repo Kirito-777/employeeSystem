@@ -15,6 +15,7 @@ const UploadFile = () => import('../views/main/UploadFile')
 const Users = () => import('../views/main/Users')
 const Dept = () => import('../views/main/Dept')
 const Notice = () => import('../views/main/Notice')
+const Password = () => import('../views/main/Password')
 
 //2.创建路由对象
 const routes = [
@@ -36,8 +37,7 @@ const routes = [
     component:Main,
     children: [{
       path:'/',
-      name:'Home',
-      component:Home
+      redirect: '/Home',
     },{
       path:'/Home',
       name:'Home',
@@ -66,13 +66,21 @@ const routes = [
       path:'/Notice',
       name:'Notice',
       component:Notice
-    }]
+    },{
+      path:'/Password',
+      name:'Password',
+      component:Password
+    },]
   }
 ]
 const router = new VueRouter({
   routes,
   mode:'history'
 })
+router.selfaddRoutes = function (params){
+  router.matcher = new Router().matcher;
+  router.addRoutes(params)
+}
 
 //3.导出router 
 export default router

@@ -9,8 +9,8 @@
       <p>真实姓名：{{perform.realname}}</p>
       <p>性别：{{perform.sex}}</p>
       <el-row class="btn">
-        <el-button type="info" @click="infoBtn">编辑信息</el-button>
-        <el-button type="primary" @click="passwordBtn">修改密码</el-button>
+        <el-button type="primary" @click="infoBtn">编辑信息</el-button>
+        <!-- <el-button type="primary" @click="passwordBtn">修改密码</el-button> -->
       </el-row>
     </div>
     <el-dialog
@@ -248,7 +248,7 @@
     position: relative;
     width: 100%;
     height: 100%;
-    /* background-color: #e5eef3c9; */
+    background-color: #f6f7f8 ;
   }
   .person-main {
     position: fixed;
@@ -273,7 +273,7 @@
   .btn {
     position: fixed;
     left: 50%;
-    bottom: 5%;
+    bottom: 15%;
     transform: translate(-50%,-50%);
   }
 

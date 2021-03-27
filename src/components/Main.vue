@@ -3,11 +3,19 @@
     <div class="header">
       <main-header />
     </div>
-    <div class="item-container">
+    <div class="item-container" v-if="$store.state.tab">
       <div class="aside">
         <main-aside />
       </div>
       <div class="main">
+        <router-view></router-view>
+      </div>
+    </div>
+    <div class="item-container" v-if="$store.state.tab1">
+      <div class="aside1">
+        <main-aside />
+      </div>
+      <div class="main1">
         <router-view></router-view>
       </div>
     </div>
@@ -22,7 +30,8 @@
     name: 'Main',
     data() {
       return {
-        
+        // tab:this.$store.state.tab == true,
+        // tab1:this.$store.state.tab == false,
       }
     },
     components: {
@@ -46,8 +55,12 @@
     //         this.$store.state.a+=1;
     //       } 
     // },
+    mounted() {
+      // console.log(this.tab);
+      // console.log(this.tab1);
+    },
     methods: {
-      
+    
     }
   }
 </script>
@@ -74,13 +87,13 @@
     position:fixed;
     top: 10%;
     left: 0;
-    width: 100%;
+    /* width: 100%; */
     height: 90%;
   }
   .aside {
     position:fixed;
     left: 0;
-    width: 13%;
+    /* width: 13%; */
     height: 90%;
     background-color: #545c64;
     color: white;
@@ -90,5 +103,21 @@
     right: 0;
     width: 87%;
     height: 90%;
+    background-color: white;
+  }
+  .aside1 {
+    position:fixed;
+    left: 0;
+    width: 4.5%;
+    height: 90%;
+    background-color: #545c64;
+    color: white;
+  }
+  .main1 {
+    position:fixed;
+    right: 0;
+    width: 95.5%;
+    height: 90%;
+    background-color: white;
   }
 </style>

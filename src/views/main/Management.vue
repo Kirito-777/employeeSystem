@@ -409,5 +409,8 @@
 </script>
 
 <style lang="scss" scoped>
-@import "@/assets/scss/common";
+  @import "@/assets/scss/common";
+  .manage {
+    background-color: white;
+  }
 </style>

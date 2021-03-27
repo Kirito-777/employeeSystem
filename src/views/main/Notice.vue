@@ -36,7 +36,18 @@
     style="width: 100%">
       <el-table-column type="expand">
         <template slot-scope="props">
-          <el-form label-position="left"  class="demo-table-expand">
+          <div >
+            <el-card class="box-card">
+              <div slot="header" >
+                <span style="font-size: 20px; text-align: center">{{props.row.title}}</span><br>
+                <span style="font-size: 5px">{{props.row.time}}</span>
+              </div>
+              <div class="text item">
+                <span>&nbsp;&nbsp;&nbsp;{{props.row.content}}</span>
+              </div>
+            </el-card>
+          </div>
+          <!-- <el-form label-position="left"  class="demo-table-expand">
             <el-form-item label="公告id">
               <span>{{ props.row.nid }}</span>
             </el-form-item>
@@ -52,30 +63,33 @@
             <el-form-item label="发布时间">
               <span>{{ props.row.time }}</span>
             </el-form-item>
-          </el-form>
+          </el-form> -->
         </template>
       </el-table-column>
       <el-table-column
         prop="nid"
         label="公告id" sortable
-        width="100">
+        width="150">
       </el-table-column>
       <el-table-column
         prop="username"
         label="发布人" sortable
-        width="100">
+        width="150">
       </el-table-column>
       <el-table-column
         prop="title" sortable
-        label="标题">
+        label="标题"
+        width="150">
       </el-table-column>
       <el-table-column
-        prop="content"
-        label="内容" sortable>
+        prop="content" show-overflow-tooltip
+        label="内容" sortable
+        width="180">
       </el-table-column>
       <el-table-column
         prop="time" sortable
-        label="发布时间">
+        label="发布时间"
+        width="180">
       </el-table-column>
       <el-table-column label="操作" min-width="180">
         <template slot-scope="scope">
@@ -83,9 +97,19 @@
           <el-button size="min" type="danger" @click="deleteNotice(scope.row)" :disabled="trueFalse">删除</el-button>
         </template>
       </el-table-column>
-      <!-- <el-backtop target="el-table" :bottom="10"></el-backtop> -->
     </el-table>
-
+    <!-- <div v-for="item in notice" :key="item.value" class="con">
+      <el-card class="box-card">
+        <div slot="header" >
+          <p>{{item.title}}</p>
+          <span style="font-size: 5px">{{item.time}}</span>
+          <el-button style="float: right; padding: 3px 0" type="text">操作按钮</el-button>
+        </div>
+        <div  class="text item">
+          <span>{{item.content}}</span>
+        </div>
+      </el-card>
+    </div> -->
     <el-dialog
         :title="title"
         :visible.sync="isShow"
@@ -105,7 +129,7 @@
             <el-input type="text"  v-model="noticetable.title"></el-input>
           </el-form-item>
           <el-form-item label="内容" prop="content">
-            <el-input type="textarea" :rows="3" v-model="noticetable.content"></el-input>
+            <el-input type="textarea" :rows="5" v-model="noticetable.content"></el-input>
           </el-form-item>
           <el-form-item>
             <el-button @click="cancel">取消</el-button>

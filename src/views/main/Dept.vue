@@ -1,6 +1,18 @@
 <template>
   <div class="de">
-    <el-button type="primary" class="add" @click="addDept">添加</el-button>
+    <el-form inline label-width="80px" class="noform" ref="deptinfo" :model="deptinfo">
+      <el-form-item >
+        <el-button type="primary" @click="addDept" >添加</el-button>
+      </el-form-item>
+      <el-form-item  prop="dname" style="margin-left: 50px" label="部门名称">
+        <el-input type="text" v-model="deptinfo.dname" placeholder="输入部门名称"></el-input>
+      </el-form-item>
+      
+      <el-form-item>
+        <el-button type="primary"  @click="search">搜索</el-button>
+      </el-form-item>
+    </el-form>
+    <!-- <el-button type="primary" class="add" @click="addDept">添加</el-button> -->
     <el-table
     :data="dept"
     border
@@ -12,7 +24,7 @@
       </el-table-column>
       <el-table-column
         prop="dname"
-        label="部门"
+        label="部门名称"
         width="180">
       </el-table-column>
       <!-- <el-table-column
@@ -21,7 +33,7 @@
       </el-table-column> -->
       <el-table-column
         prop="manage"
-        label="主管">
+        label="部门主管">
       </el-table-column>
       <el-table-column label="操作" min-width="180">
         <template slot-scope="scope">
@@ -50,9 +62,9 @@
           <el-input type="text"  v-model="deptinfo.did"
             placeholder="输入部门"></el-input>
         </el-form-item> -->
-        <el-form-item label="部门" prop="dname">
+        <el-form-item label="部门名称" prop="dname">
           <el-input type="text"  v-model="deptinfo.dname"
-            placeholder="输入部门"></el-input>
+            placeholder="输入部门名称"></el-input>
         </el-form-item>
         <!-- <el-form-item label="部门号" prop="fId">
           <el-input type="text"  v-model="deptinfo.fId"
@@ -62,10 +74,10 @@
           <el-input type="text"  v-model="deptinfo.manage"
             placeholder="输入主管"></el-input>
         </el-form-item> -->
-        <el-form-item label="主管">
+        <el-form-item label="部门主管">
           <el-select
             v-model="deptinfo.manage"
-            placeholder="请选择"
+            placeholder="请选择部门主管"
           >
             <!--如果是select或者checkbox 、Radio就还需要选项信息-->
             <el-option
@@ -75,6 +87,7 @@
               :value="item.name"
             ></el-option>
           </el-select>
+          <p>提示：部门主管从员工里面选择</p>
         </el-form-item>
         <el-form-item>
           <el-button @click="cancelUser">取消</el-button>
@@ -162,7 +175,7 @@
       },
       delDept(row) {
         this.deptinfo = row;
-        this.$confirm('此操作将永久删除该部门和该部门下的员工, 是否继续?', '提示', {
+        this.$confirm('此操作将永久删除该部门和该部门下的员工\n如果不想删除，请将这些员工换到其他部门, 是否继续?', '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'warning'
@@ -188,6 +201,25 @@
         this.deptinfo = {};
         this.title = "添加部门";
         this.isShow = true;
+      },
+      search() {
+        // console.log(this.deptinfo.dname)
+        if(this.deptinfo.dname == "") {
+          this.getDept();
+        }else{
+          axios.post("http://localhost:8088/staffManage/getdept",this.deptinfo).then(res => {
+            // console.log(res.data);
+            this.dept = res.data.map((item) => {
+              return item;
+            });
+          }).catch(re => {
+            this.$message({
+            type: 'error',
+            message: '没有查到该部门！'
+          });
+          })
+        }
+        
       }
     }
   }

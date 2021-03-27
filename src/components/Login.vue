@@ -161,7 +161,7 @@
   position: fixed;
   left: 0;
   top: 0;
-  background-color:#060038;
+  background-color:#5745fa;
   /* background-color:#898799;       */
  }
 

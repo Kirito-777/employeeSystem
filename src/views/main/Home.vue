@@ -29,6 +29,7 @@
     width: 100%;
     height: 100%;
     /* width: 200px; */
+    background-color: white;
   }
   .home-label {
     position: absolute;
