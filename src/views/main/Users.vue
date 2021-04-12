@@ -1,11 +1,12 @@
 <template>
   <div class="users-table">
         <el-form inline label-width="80px" class="noform" >
-          <el-form-item label="用户名">
-            <el-input type="text" v-model="username" placeholder="输入用户名"></el-input>
+          <el-form-item label="">
+            <el-input type="text" v-model="username" placeholder="输入搜索条件"></el-input>
           </el-form-item>
           <el-form-item>
             <el-button type="primary"  @click="searchUser">搜索</el-button>
+            <el-button @click="reset">重置</el-button>
           </el-form-item>
         </el-form>
         <!--stripe	是否为斑马纹  v-loading在请求数据未返回的时间有个加载的图案,提高用户体验-->
@@ -98,6 +99,10 @@
       }
     },
     methods: {
+      reset() {
+        this.username = '';
+        this.getAllusers();
+      },
       getAllusers() {
         let id=sessionStorage.getItem("id")
         // console.log(id);
@@ -192,17 +197,11 @@
         // console.log(this.username);
         if(this.username !== '') {
           axios.post("http://localhost:8088/staffManage/getuser?username="+this.username).then(res => {
-            // this.table = {};
-            // console.log(res.data.data.user);
-            this.table[0].id = res.data.data.user.id;
-            this.table[0].username = res.data.data.user.username;
-            this.table[0].realname = res.data.data.user.realname;
-            this.table[0].power = res.data.data.user.power;
-            this.table[0].sex = res.data.data.user.sex;
-            // this.table[0].id = res.data.data.user.id;
-            this.config.total = 1;
+            this.table = res.data.data.pageInfo.list.map((item) => {
+              return item;
+            });
+            this.config.total = res.data.data.pageInfo.total;
             this.config.loading = false;
-            this.table.length = 1;
           }).catch(res => {
             this.$message({
                 type: "error",

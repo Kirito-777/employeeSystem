@@ -27,14 +27,16 @@
       </el-form-item>
       <el-form-item>
         <el-button type="primary"  @click="search">搜索</el-button>
+        <el-button @click="reset">重置</el-button>
       </el-form-item>
     </el-form>
     <el-table
     :data="notice"
-    height="580px"
+    height="100%"
     stripe 
-    style="width: 100%">
-      <el-table-column type="expand">
+    style="width: 100%"
+    v-loading="config.loading">
+      <!-- <el-table-column type="expand">
         <template slot-scope="props">
           <div >
             <el-card class="box-card">
@@ -47,25 +49,8 @@
               </div>
             </el-card>
           </div>
-          <!-- <el-form label-position="left"  class="demo-table-expand">
-            <el-form-item label="公告id">
-              <span>{{ props.row.nid }}</span>
-            </el-form-item>
-            <el-form-item label="发布人">
-              <span>{{ props.row.username }}</span>
-            </el-form-item>
-            <el-form-item label="标题">
-              <span>{{ props.row.title }}</span>
-            </el-form-item>
-            <el-form-item label="内容">
-              <span>{{ props.row.content }}</span>
-            </el-form-item>
-            <el-form-item label="发布时间">
-              <span>{{ props.row.time }}</span>
-            </el-form-item>
-          </el-form> -->
         </template>
-      </el-table-column>
+      </el-table-column> -->
       <el-table-column
         prop="nid"
         label="公告id" sortable
@@ -85,6 +70,15 @@
         prop="content" show-overflow-tooltip
         label="内容" sortable
         width="180">
+        <template slot-scope="scope">
+        <el-popover trigger="click" placement="top">
+          <p>标题: {{ scope.row.title }}</p>
+          <p>内容: {{ scope.row.content }}</p>
+          <div slot="reference" class="name-wrapper" style="font-size: 15px ! important">
+            <el-tag size="medium">{{ scope.row.content }}</el-tag>
+          </div>
+        </el-popover>
+      </template>
       </el-table-column>
       <el-table-column
         prop="time" sortable
@@ -98,6 +92,8 @@
         </template>
       </el-table-column>
     </el-table>
+     <!--分页-->
+  <el-pagination class="pager" layout="total, prev, pager, next, jumper" :total="config.total" :current-page.sync="config.page" @current-change="changePage" :page-size="7"></el-pagination>
     <!-- <div v-for="item in notice" :key="item.value" class="con">
       <el-card class="box-card">
         <div slot="header" >
@@ -154,6 +150,11 @@
         isShow: false,
         data: '',
         notice: [],
+        config: {
+          page: 1,
+          total: 30,
+          loading: false,
+        },
         noticetable: {
           nid: '',
           username: '',
@@ -202,13 +203,19 @@
       this.getnotices();
     },
     methods: {
+      reset() {
+        this.searchnotice = {};
+        this.getnotices();
+      },
       getnotices() {
         axios.post("http://localhost:8088/staffManage/getnotices").then(res => {
           // console.log(res.data);
-          this.notice = res.data.map((item) => {  
+          this.notice = res.data.data.pageInfo.list.map((item) => {  
             // item.time.setTime(timestamp3 * 1000).toDateString();
             return item;
-          });    
+          });
+          this.config.total = res.data.data.pageInfo.total;
+          this.config.loading = false;    
         }).catch(res => {
           console.log("读取失败");
         })
@@ -277,41 +284,77 @@
         this.noticetable = {};
       },
       search(){
-        // this.noticetable.nid = this.data;
-        // this.noticetable.username = this.data;
-        // this.noticetable.title = this.data;
-        // this.noticetable.nId = this.data;
-        // this.noticetable.content = this.data;
-        // this.noticetable.time = this.data;
-        console.log(this.searchnotice.time);
+        // console.log(this.searchnotice.time);
         axios.post("http://localhost:8088/staffManage/searchnotice",this.searchnotice).then(res => {
-            this.notice = res.data.map((item) => {  
-            // item.time.setTime(timestamp3 * 1000).toDateString();
-            // if(item==""){
-            //   this.$message({
-            //   type: 'warning',
-            //   message: '没有该公告'
-            //   });
-            // }
+          this.notice = res.data.data.pageInfo.list.map((item) => {  
             return item;
           });
-          
-          }).catch(res => {
-            // console.log("删除失败");
+          this.config.total = res.data.data.pageInfo.total;
+          this.config.loading = false;
+          if(this.config.total == 0){
             this.$message({
             type: 'warning',
             message: '没有该公告'
             }); 
+          }
+          }).catch(res => {
+            
           })
-      }
+      },
+      changePage(page) {
+        if(this.searchnotice=={}){
+          axios.post("http://localhost:8088/staffManage/getnotices?page="+page).then(res => {
+          this.notice = res.data.data.pageInfo.list.map((item) => {
+                // console.log(item);
+                // if(item.username==sessionStorage.getItem("username")) {
+                //   // this.$delete(item) ;
+                //   return null
+                // }else{
+                //   return item;
+                // }
+                return item;
+              });
+              this.config.total = res.data.data.pageInfo.total;
+              this.config.loading = false;
+            }).catch(res => {
+              console.log("读取失败");
+            })
+        }else{
+          axios.post("http://localhost:8088/staffManage/searchnotice?page="+page,this.searchnotice).then(res => {
+          this.notice = res.data.data.pageInfo.list.map((item) => {  
+            return item;
+          });
+          this.config.total = res.data.data.pageInfo.total;
+          this.config.loading = false;
+          if(this.config.total == 0){
+            this.$message({
+            type: 'warning',
+            message: '没有该公告'
+            }); 
+          }
+          }).catch(res => {
+            
+          })
+        }
+      },
     }
   }
 </script>
 
-<style>
-  .notice {
-    margin: 10px 10px;
-  }
+<style lang="scss" scoped>
+    .notice {
+        height: calc(91.5% - 82px);
+        margin: 10px 10px;
+        position: relative;
+        .pager {
+            margin-top: 15px;
+            position: absolute;
+            left: 50%;
+            height: 10% !important;
+            // transform: translate(-50%,-50%);
+            margin-left: -320px;
+        }
+    }
   /* .in {
     left: 150px;
   }
@@ -332,6 +375,6 @@
     width: 50%;
   } */
   .inp{
-    width: 130px !important;
+    width: 118px !important;
   }
 </style>

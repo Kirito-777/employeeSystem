@@ -260,7 +260,7 @@
     border-radius: 10%;
     text-align: center;
     background-color: #fff;
-    box-shadow:0px 0px 15px #303642;
+    box-shadow:0px 0px 5px #303642;
   }
   .person-main p {
     line-height: 35px;

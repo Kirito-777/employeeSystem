@@ -10,10 +10,8 @@
       background-color="#545c64"
       text-color="#fff"
       active-text-color="#ffd04b"
-      close=""
       :unique-opened="true"
       style="border-right: 0 !important"
-
       :collapse="isCollapse"
       >
       <el-menu-item index="Home" @click="TabBtn1">

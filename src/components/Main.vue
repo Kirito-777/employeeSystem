@@ -93,7 +93,7 @@
   .aside {
     position:fixed;
     left: 0;
-    /* width: 13%; */
+    width: 13%;
     height: 90%;
     background-color: #545c64;
     color: white;

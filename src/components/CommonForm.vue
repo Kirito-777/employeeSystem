@@ -210,6 +210,6 @@ export default {
   margin-right: 25px;
 }
 .test{
-  width: 130px !important;
+  width: 120px !important;
 }
 </style>

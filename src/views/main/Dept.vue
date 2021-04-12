@@ -1,22 +1,28 @@
 <template>
   <div class="de">
-    <el-form inline label-width="80px" class="noform" ref="deptinfo" :model="deptinfo">
+    <el-form inline label-width="80px" class="noform" ref="deptinfo" :model="deptinfo1">
       <el-form-item >
         <el-button type="primary" @click="addDept" >添加</el-button>
       </el-form-item>
-      <el-form-item  prop="dname" style="margin-left: 50px" label="部门名称">
-        <el-input type="text" v-model="deptinfo.dname" placeholder="输入部门名称"></el-input>
+      <el-form-item  prop="dname" style="margin-left: 50px" label="">
+        <el-input type="text" v-model="deptinfo1.dname" placeholder="请输入查找条件"></el-input>
       </el-form-item>
       
       <el-form-item>
         <el-button type="primary"  @click="search">搜索</el-button>
       </el-form-item>
+      <el-form-item>
+        <el-button @click="reset">重置</el-button>
+      </el-form-item>
+      
     </el-form>
     <!-- <el-button type="primary" class="add" @click="addDept">添加</el-button> -->
     <el-table
+    height="100%"
     :data="dept"
     border
-    style="width: 100%">
+    style="width: 100%"
+    v-loading="config.loading">
       <el-table-column
         prop="did"
         label="部门号"
@@ -42,7 +48,8 @@
         </template>
       </el-table-column>
   </el-table>
-
+  <!--分页-->
+  <el-pagination class="pager" layout="total, prev, pager, next, jumper" :total="config.total" :current-page.sync="config.page" @current-change="changePage" :page-size="7"></el-pagination>
   <el-dialog
       :title="title"
       :visible.sync="isShow"
@@ -96,6 +103,7 @@
       </el-form>
   </el-dialog>
   </div>
+  
 </template>
 
 <script>
@@ -108,7 +116,18 @@
         inline: false,
         dept: [],
         isShow: false,
+        config: {
+          page: 1,
+          total: 30,
+          loading: true,
+        },
         deptinfo: {
+          did: '',
+          dname: '',
+          fId: '',
+          manage: '',
+        },
+        deptinfo1: {
           did: '',
           dname: '',
           fId: '',
@@ -123,7 +142,14 @@
             dname: '',
           },
         },
-        emptable: []
+        emptable: [],
+        searchFrom: {
+          keyword: "",
+          userId: "",
+          userName: "",
+          userAge: "",
+          userSalary: "",
+        },
       }
     },
     mounted() {
@@ -133,14 +159,21 @@
         this.emptable = res.data.map((item) => {
           return item;
         });
+        
       })
     },
     methods: {
+      reset(){
+        this.deptinfo1 = {};
+        this.getDept();
+      },
       getDept() {
         axios.post("http://localhost:8088/staffManage/getdepts").then(res => {
-        this.dept = res.data.map((item) => {  
+        this.dept = res.data.data.pageInfo.list.map((item) => {  
           return item;
         });
+        this.config.total = res.data.data.pageInfo.total;
+        this.config.loading = false;
         }).catch(res => {
           console.log("读取失败");
         })
@@ -175,27 +208,57 @@
       },
       delDept(row) {
         this.deptinfo = row;
-        this.$confirm('此操作将永久删除该部门和该部门下的员工\n如果不想删除，请将这些员工换到其他部门, 是否继续?', '提示', {
+        this.searchFrom.keyword = row.dname;
+        // console.log(row.dname);
+        axios({
+          method: "post",
+          url:
+            "http://localhost:8088/staffManage/getemps",
+          data: {
+            id: this.searchFrom.userId,
+            name: this.searchFrom.userName,
+            salary: this.searchFrom.userSalary,
+            age: this.searchFrom.userAge,
+            dept: {
+              dname: this.searchFrom.keyword,
+            },
+          },
+          // + "&name=" + keyword
+        }).then(res => {
+          // console.log(res.data.code);
+          if (res.data.code == 100) {
+             this.$confirm('此操作将永久删除该部门信息, 是否继续?', '提示', {
+              confirmButtonText: '确定',
+              cancelButtonText: '取消',
+              type: 'warning'
+            }).then(() => {
+              axios.post("http://localhost:8088/staffManage/deletedept",this.deptinfo).then(res => {
+                this.getDept();
+              }).catch(res => {
+                
+              })
+              this.$message({
+                type: 'success',
+                message: '删除成功!'
+              });
+              
+            }).catch(() => {
+              this.$message({
+                type: 'info',
+                message: '已取消删除'
+              });          
+            });
+          } else {
+            // alert("删除失败！该部门下还有员工，请将员工换到其他部门或者删除再来删除部门！");
+            this.$alert('该部门下还有员工，请将员工换到其他部门或者删除再来删除部门！', '删除失败！', {
           confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
-        }).then(() => {
-          axios.post("http://localhost:8088/staffManage/deletedept",this.deptinfo).then(res => {
-            this.getDept();
-          }).catch(res => {
-            
-          })
-          this.$message({
-            type: 'success',
-            message: '删除成功!'
-          });
           
-        }).catch(() => {
-          this.$message({
-            type: 'info',
-            message: '已取消删除'
-          });          
         });
+          }
+        }).catch(reject => {
+         
+        })
+        
       },
       addDept() {
         this.deptinfo = {};
@@ -204,14 +267,29 @@
       },
       search() {
         // console.log(this.deptinfo.dname)
-        if(this.deptinfo.dname == "") {
+        if(this.deptinfo1.dname == "") {
           this.getDept();
         }else{
-          axios.post("http://localhost:8088/staffManage/getdept",this.deptinfo).then(res => {
+          // console.log(typeof(this.deptinfo1.dname) );
+          //  if(typeof(this.deptinfo1.dname) === Number){
+              
+          //     this.deptinfo1.id = this.deptinfo1.dname;
+          //     this.deptinfo1.dname = "";
+          //     console.log(this.deptinfo1.id);
+          //   }
+          axios.post("http://localhost:8088/staffManage/getdept",this.deptinfo1).then(res => {
             // console.log(res.data);
-            this.dept = res.data.map((item) => {
+            this.dept = res.data.data.pageInfo.list.map((item) => {
               return item;
             });
+            this.config.total = res.data.data.pageInfo.total;
+            this.config.loading = false;
+            if(this.config.total == 0){
+              this.$message({
+              type: 'warning',
+              message: '没有查找到该部门'
+              }); 
+            }
           }).catch(re => {
             this.$message({
             type: 'error',
@@ -220,16 +298,62 @@
           })
         }
         
-      }
+      },
+      changePage(page) {
+        // if(this.deptinfo1=={}){
+          axios.post("http://localhost:8088/staffManage/getdepts?page="+page).then(res => {
+            this.dept = res.data.data.pageInfo.list.map((item) => {
+                  return item;
+                });
+            this.config.total = res.data.data.pageInfo.total;
+            this.config.loading = false;
+            
+          }).catch(res => {
+            console.log("读取失败");
+          })
+        // }else{
+        //   axios.post("http://localhost:8088/staffManage/getdept?page="+page,this.deptinfo1).then(res => {
+        //     // console.log(res.data);
+        //     this.dept = res.data.data.pageInfo.list.map((item) => {
+        //       return item;
+        //     });
+        //     this.config.total = res.data.data.pageInfo.total;
+        //     this.config.loading = false;
+        //     if(this.config.total == 0){
+        //       this.$message({
+        //       type: 'warning',
+        //       message: '没有查找到该部门'
+        //       }); 
+        //     }
+        //   }).catch(re => {
+        //     this.$message({
+        //     type: 'error',
+        //     message: '没有查到该部门！'
+        //   });
+        //   })
+        // }
+        
+      },
     }
   }
 </script>
 
-<style>
-  .de {
-    margin: 10px 10px;
-  }
+<style lang="scss" scoped>
+    .de {
+        height: calc(90% - 82px);
+        margin: 10px 10px;
+        position: relative;
+        .pager {
+            margin-top: 15px;
+            position: absolute;
+            left: 50%;
+            height: 10% !important;
+            // transform: translate(-50%,-50%);
+            margin-left: -320px;
+        }
+    }
   .add{
     margin-bottom: 5px;
   }
+  
 </style>

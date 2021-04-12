@@ -30,6 +30,7 @@
           style="width: auto"
           @click="change();query(searchFrom.keyword,page)"
           >搜索</el-button>
+          <el-button @click="reset">重置</el-button>
       </common-form>
     </div>
     <!--依次是: 表格数据 表格标签数据 分页数据  列表方法 更新方法 删除方法-->
@@ -57,7 +58,7 @@
       CommonTable,
     },
     mounted() {
-      axios.post("http://localhost:8088/staffManage/getdepts").then(res => {
+      axios.post("http://localhost:8088/staffManage/getdeptsAll").then(res => {
         // console.log(res.data);
         this.formLabel[3].opts= res.data.map((item) => {  
           return item;
@@ -213,6 +214,10 @@
       };
     },
     methods: {
+      reset() {
+        this.searchFrom = {};
+        this.getList();
+      },
       change()  {
         sessionStorage.setItem("queryTrueOrFalse",true)
       },

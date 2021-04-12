@@ -139,13 +139,14 @@
     background-color: #f6f7f8 ! important;
   }
   .passfrom {
-    position: fixed;
-    left:55%;
+    position: absolute;
+    left:50%;
     top:50%;
     height: 50%;
     background-color: white;
     transform: translate(-50%,-50%);
     width: 60%;
+    box-shadow:0px 0px 2px #303642;
     /* text-align: center; */
   }
   .from {
