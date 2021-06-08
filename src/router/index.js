@@ -16,6 +16,8 @@ const Users = () => import('../views/main/Users')
 const Dept = () => import('../views/main/Dept')
 const Notice = () => import('../views/main/Notice')
 const Password = () => import('../views/main/Password')
+const Analysis = () => import('../views/main/Analysis')
+const Salary = () => import('../views/main/Salary')
 
 //2.创建路由对象
 const routes = [
@@ -70,6 +72,14 @@ const routes = [
       path:'/Password',
       name:'Password',
       component:Password
+    },{
+      path:'/Analysis',
+      name:'Analysis',
+      component:Analysis
+    },{
+      path:'/Salary',
+      name:'Salary',
+      component:Salary
     },]
   }
 ]

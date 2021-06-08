@@ -2,7 +2,7 @@
   <div class="notice">
     <el-form inline label-width="80px" class="noform" ref="searchnotice" :model="searchnotice">
       <el-form-item >
-        <el-button type="primary" @click="addnotice" :disabled="trueFalse">添加</el-button>
+        <el-button type="primary" @click="addnotice" v-if="trueFalse">添加</el-button>
       </el-form-item>
       <el-form-item label="公告id" prop="nid" >
         <el-input type="text" v-model="searchnotice.nid" class="inp" placeholder="请输入公告id"></el-input>
@@ -27,30 +27,15 @@
       </el-form-item>
       <el-form-item>
         <el-button type="primary"  @click="search">搜索</el-button>
-        <el-button @click="reset">重置</el-button>
+        <el-button @click="download" v-if="trueFalse">导出</el-button>
       </el-form-item>
     </el-form>
     <el-table
     :data="notice"
     height="100%"
     stripe 
-    style="width: 100%"
+    style="width: 100%"  :row-style="{height: '65px'}"
     v-loading="config.loading">
-      <!-- <el-table-column type="expand">
-        <template slot-scope="props">
-          <div >
-            <el-card class="box-card">
-              <div slot="header" >
-                <span style="font-size: 20px; text-align: center">{{props.row.title}}</span><br>
-                <span style="font-size: 5px">{{props.row.time}}</span>
-              </div>
-              <div class="text item">
-                <span>&nbsp;&nbsp;&nbsp;{{props.row.content}}</span>
-              </div>
-            </el-card>
-          </div>
-        </template>
-      </el-table-column> -->
       <el-table-column
         prop="nid"
         label="公告id" sortable
@@ -69,7 +54,7 @@
       <el-table-column
         prop="content" show-overflow-tooltip
         label="内容" sortable
-        width="180">
+        width="400">
         <template slot-scope="scope">
         <el-popover trigger="click" placement="top">
           <p>标题: {{ scope.row.title }}</p>
@@ -85,27 +70,34 @@
         label="发布时间"
         width="180">
       </el-table-column>
-      <el-table-column label="操作" min-width="180">
+      <el-table-column label="操作" min-width="180" >
         <template slot-scope="scope">
-          <el-button size="min" type="info" @click="editNotice(scope.row)" :disabled="trueFalse">编辑</el-button>
-          <el-button size="min" type="danger" @click="deleteNotice(scope.row)" :disabled="trueFalse">删除</el-button>
+          <el-button size="min" type="info" @click="editNotice(scope.row)" v-if="trueFalse">编辑</el-button>
+          <el-button size="min" type="danger" @click="deleteNotice(scope.row)" v-if="trueFalse">删除</el-button>
+          <el-button size="min" type="info" @click="look(scope.row)" v-if="trueFalse1">查看</el-button>
         </template>
       </el-table-column>
     </el-table>
+    
      <!--分页-->
   <el-pagination class="pager" layout="total, prev, pager, next, jumper" :total="config.total" :current-page.sync="config.page" @current-change="changePage" :page-size="7"></el-pagination>
-    <!-- <div v-for="item in notice" :key="item.value" class="con">
-      <el-card class="box-card">
-        <div slot="header" >
-          <p>{{item.title}}</p>
-          <span style="font-size: 5px">{{item.time}}</span>
-          <el-button style="float: right; padding: 3px 0" type="text">操作按钮</el-button>
-        </div>
-        <div  class="text item">
-          <span>{{item.content}}</span>
-        </div>
-      </el-card>
-    </div> -->
+    <el-dialog
+      :visible.sync="dialogVisible"
+      :destroy-on-close="true"
+      :show-close="true"
+      :close-on-press-escape="false"
+      :close-on-click-modal="false"
+      :modal-append-to-body="false"
+      width="30%"
+      class="look"
+      >
+      <p style="font-size: 20px; text-align: center"><strong>{{noticetable.title}}</strong></p>
+      <p style="font-size: 12px; text-align: center;">{{noticetable.username+'&nbsp;'+noticetable.time}}</p>
+      <span>{{noticetable.content}}</span>
+      <span slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="dialogVisible = false">关闭</el-button>
+      </span>
+    </el-dialog>
     <el-dialog
         :title="title"
         :visible.sync="isShow"
@@ -140,16 +132,20 @@
 
 <script>
   import axios from 'axios'
+  import {formatJson,export_json_to_excel} from '../../excel/Export2Excel'
   export default {
     name: 'Notice',
     data() {
       return {
         // inline: false,
-        trueFalse: sessionStorage.getItem("trueFalse") == "false",
+        trueFalse: sessionStorage.getItem("trueFalse") == "true",
+        trueFalse1: sessionStorage.getItem("trueFalse") == "false",
         title: '',
         isShow: false,
+        dialogVisible: false,
         data: '',
         notice: [],
+        no: [],
         config: {
           page: 1,
           total: 30,
@@ -200,12 +196,53 @@
       }
     },
     mounted() {
+      if (sessionStorage.getItem("username") == null) {
+        this.$message({
+          type: "error",
+          message: "未登录，不能直接访问员工管理系统！",             
+        });
+        this.$router.push('/')
+        }else{
+           
+        } 
       this.getnotices();
     },
     methods: {
-      reset() {
-        this.searchnotice = {};
-        this.getnotices();
+      look(row) {
+        // this.$alert(row.content, row.title, {
+        //   confirmButtonText: '关闭',
+          
+        //   callback: action => {
+            
+        //   }
+        // });
+        this.dialogVisible = true;
+        this.noticetable = row;
+      },
+      download() {
+        let header = ["id", "name", "salary","age","dname","manage"];
+        axios({
+          method: "post",
+          url: "http://localhost:8088/staffManage/getnoticesAll",
+        }).then((res) => {
+          this.no = res.data.map((item) => {
+            return item;
+          });
+          require.ensure([], () => {
+        　　　const tHeader = ['公告id', '发布人', '标题','内容','时间'];
+        　　　// 上面设置Excel的表格第一行的标题
+        　　　const filterVal = ['nid', 'username', 'title','content','time'];
+        　　　// 上面是对象的属性
+        　　　const list = this.no.map(item => {
+                return item;
+              });  //把data里的tableData存到list
+        　　　const data = this.formatJson(filterVal, list);
+        　　　export_json_to_excel(tHeader, data, '公告');
+        　　})
+        });　
+      },
+      formatJson(filterVal, jsonData) {
+        return jsonData.map(v => filterVal.map(j => v[j]))
       },
       getnotices() {
         axios.post("http://localhost:8088/staffManage/getnotices").then(res => {
@@ -293,9 +330,10 @@
           this.config.loading = false;
           if(this.config.total == 0){
             this.$message({
-            type: 'warning',
-            message: '没有该公告'
+              type: 'warning',
+              message: '没有该公告'
             }); 
+            this.getnotices();
           }
           }).catch(res => {
             
@@ -377,4 +415,7 @@
   .inp{
     width: 118px !important;
   }
+  // .el-dialog__body{
+  //   padding: 0px 20px !important;
+  // }
 </style>

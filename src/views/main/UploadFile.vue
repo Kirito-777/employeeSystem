@@ -6,6 +6,7 @@
         <input type="file" name="fileInput" ref="refFile" style="background-color: #fff">
       </el-button> <br> <br>
       <el-button type="primary" class="bt" size="medium" @click="goFile" >上传<i class="el-icon-upload el-icon--right"></i></el-button> <br> <br><br> <br>
+      <!-- <el-button @click="download">导出</el-button> -->
       <span>提示：只支持上传.xls文件</span>                    
     </form>
     <div class="table">
@@ -40,6 +41,8 @@
 
 <script>
   import axios from 'axios';
+  // import CsvExportor from "csv-exportor";
+  
   export default {
     name: 'UploadFile',
     data(){
@@ -56,9 +59,11 @@
           total: 30,
           loading: true,
         },
+        emp: [],
       }
     },
     methods: {
+      
       // 文件上传
       goFile(){
         var formData = new FormData();
@@ -89,7 +94,10 @@
             // console.log(this.table[i].filename);
             if(this.table[i].filename == value.name){
               // console.log(this.filetable[i].filename);
-              alert("已经上传过重复的文件，请重新命名文件！");
+              // alert("已经上传过重复的文件，请重新命名文件！");
+              this.$alert("已经上传过重复的文件，请重新命名文件！", '提示', {
+                confirmButtonText: '确定',    
+              }); 
               document.getElementById("formFile").reset();
               a=1;
             }
@@ -112,10 +120,11 @@
             if(lenght==0){                                    
               this.$message({
                 type: "success",
-                message: "数据插入成功",
+                message: "数据上传成功",
               })
               this.postfile();
               document.getElementById("formFile").reset()
+              
             }else{
               var strName = "";
               for(var i=0; i<lenght;i++){
@@ -149,6 +158,7 @@
         this.file.date =sessionStorage.getItem('time');
         axios.post("http://localhost:8088/staffManage/addfile",this.file).then(res => {
           console.log("上传成功");
+          this.getfiles(1);
         }).catch(()=>{
 
         })
@@ -167,6 +177,15 @@
       }
     },
     mounted(){
+      if (sessionStorage.getItem("username") == null) {
+        this.$message({
+          type: "error",
+          message: "未登录，不能直接访问员工管理系统！",             
+        });
+        this.$router.push('/')
+        }else{
+           
+        } 
       this.getfiles(1);
       axios.post("http://localhost:8088/staffManage/getfile?page=1").then(res => {
           // console.log(res.data.data.pageInfo);

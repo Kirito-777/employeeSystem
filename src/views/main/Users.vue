@@ -6,7 +6,7 @@
           </el-form-item>
           <el-form-item>
             <el-button type="primary"  @click="searchUser">搜索</el-button>
-            <el-button @click="reset">重置</el-button>
+            <!-- <el-button @click="reset">重置</el-button> -->
           </el-form-item>
         </el-form>
         <!--stripe	是否为斑马纹  v-loading在请求数据未返回的时间有个加载的图案,提高用户体验-->
@@ -37,7 +37,7 @@
               label="性别" sortable>
             </el-table-column>
             <el-table-column
-              prop="power"
+              prop="power" show-overflow-tooltip
               label="权限" sortable>
             </el-table-column>
             <!--操作-->
@@ -61,6 +61,15 @@
   export default {
     name: 'Users',
     mounted() {
+      if (sessionStorage.getItem("username") == null) {
+        this.$message({
+          type: "error",
+          message: "未登录，不能直接访问员工管理系统！",             
+        });
+        this.$router.push('/')
+        }else{
+           
+        } 
       this.getAllusers();
     },
     data(){
@@ -73,6 +82,13 @@
           page: 1,
           total: 30,
           loading: false,
+        },
+        cinfo: {
+          id:'',
+          username:'',
+          realname:'',
+          sex:'',
+          power:'',
         },
         Label: [
           {
@@ -162,7 +178,7 @@
                   type: "success",
                   message: "删除成功!",
                 });
-                this.changePage(1);
+                this.getAllusers();
               });
           })
           .catch(() => {
@@ -173,25 +189,48 @@
           });
       },
       addpower(row) {
-        if(row.power == "用户"){
-          row.power = "管理员"
-        }else {
-          row.power = "用户"
-        }
         // console.log(row);
-        axios.post('http://localhost:8088/staffManage/updateinfo', row).then(res => {
-            if(res.data.code == 200){ //代表添加成功
-              this.$message({
-                type: "success",
-                message: "修改成功！",             
-              });
-            }else{
-              this.$message({
-                type: "warning",
-                message: "修改失败!",             
-              });
-            }                                 
+        this.cinfo.id = row.id;
+        this.cinfo.username = row.username;
+        this.cinfo.realname = row.realname;
+        this.cinfo.sex = row.sex;
+        var a='';
+        if(row.power == "用户"){
+          a = "管理员";
+          this.cinfo.power = "管理员";
+        }else {
+          a = "用户";
+          this.cinfo.power = "用户";
+        }
+        this.$confirm("是否确定修改该"+row.username+"为"+a+'?', "提示", {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "warning",
+        })
+          .then(() => {
+            axios.post('http://localhost:8088/staffManage/updateinfo', this.cinfo).then(res => {
+              if(res.data.code == 200){ //代表添加成功
+                if(row.power == "用户"){
+                    row.power = "管理员"
+                  }else {
+                    row.power = "用户"
+                  }
+                this.$message({
+                  type: "success",
+                  message: "修改成功！",             
+                });
+              }else{
+                this.$message({
+                  type: "warning",
+                  message: "修改失败!",             
+                });
+              }                                 
+            })
           })
+          .catch(() => {
+            
+          });
+        
       },
       searchUser() {
         // console.log(this.username);
@@ -202,24 +241,29 @@
             });
             this.config.total = res.data.data.pageInfo.total;
             this.config.loading = false;
-          }).catch(res => {
-            this.$message({
-                type: "error",
+            if(this.config.total==0){
+              this.$message({
+                type: "warning",
                 message: "没有找到该用户!",             
               });
+              this.getAllusers();
+            }
+          }).catch(res => {
+            
+
           })
         }else{
           this.getAllusers();
         }
         
       }
-    }
+    },
   }
 </script>
 
 <style lang="scss" scoped>
     .users-table {
-        height: calc(92% - 82px);
+        height: calc(91.5% - 82px);
         margin: 10px 10px;
         position: relative;
         .pager {

@@ -49,11 +49,19 @@
       <el-submenu index="5" v-if="trueFalse">
         <template slot="title">
           <i class="el-icon-s-custom"></i>
-          <span>系统用户</span>
+          <span>用户管理</span>
         </template>
-        <el-menu-item index="Users" @click="TabBtnUsers">用户管理</el-menu-item>
+        <el-menu-item index="Users" @click="TabBtnUsers">系统用户</el-menu-item>
       </el-submenu>
-      <el-submenu index="6">
+      <el-submenu index="6" v-if="trueFalse">
+        <template slot="title">
+          <i class="el-icon-s-data"></i>
+          <span>统计图表</span>
+        </template>
+        <el-menu-item index="Analysis" @click="TabBtnAnalysis">部门人员统计</el-menu-item>
+        <el-menu-item index="Salary" @click="TabBtnSalary">薪水人员统计</el-menu-item>
+      </el-submenu>
+      <el-submenu index="7">
         <template slot="title">
           <i class="el-icon-user"></i>
           <span>个人设置</span>
@@ -129,6 +137,12 @@
       },
       TabBtnPass() {
         this.$router.push("/Password");
+      },
+      TabBtnAnalysis() {
+        this.$router.push("/Analysis"); 
+      },
+      TabBtnSalary() {
+        this.$router.push("/Salary");
       }
     }
   }

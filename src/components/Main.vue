@@ -38,7 +38,8 @@
       MainHeader,
       MainAside,
     },
-    beforeCreate() {
+    mounted() {
+      // console.log(typeof(sessionStorage.getItem("username")));
       if (sessionStorage.getItem("username") == '') {
         this.$message({
           type: "error",
@@ -48,16 +49,6 @@
         }else{
            
         }       
-    },
-    // created() {
-    //   if(this.$store.state.a == 1){
-    //         this.$router.push("/Home"); 
-    //         this.$store.state.a+=1;
-    //       } 
-    // },
-    mounted() {
-      // console.log(this.tab);
-      // console.log(this.tab1);
     },
     methods: {
     

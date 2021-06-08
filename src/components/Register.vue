@@ -21,7 +21,7 @@
     </vue-particles>
     <el-form
       :model="ruleForm"
-      :rules="rules"
+      :rules="rules1"
       ref="ruleForm"
       label-width="100px"
       class="dns"
@@ -29,13 +29,16 @@
      <h1 class="re">员工管理系统/注册</h1>
       <el-form-item label="用户名" prop="username">
         <!-- <el-input v-model="ruleForm.username"></el-input> -->
-        <el-input v-model="ruleForm.username"  @keyup.native="onlyChianeseEn1"  @blur="check('ruleForm.username')" minlength="3" maxlength="40"></el-input>
+        <el-input v-model="ruleForm.username"  @keypress.native="onlyChianeseEn1"  @blur="check()" minlength="3" maxlength="40"></el-input>
       </el-form-item>
       <el-form-item label="真实姓名" prop="realname">
-        <el-input v-model="ruleForm.realname"  @keyup.native="onlyChianeseEn" minlength="1" maxlength="40"></el-input>
+        <el-input v-model="ruleForm.realname"  @keypress.native="onlyChianeseEn" minlength="1" maxlength="40"></el-input>
       </el-form-item>
       <el-form-item label="密码" prop="password">
         <el-input type="password" v-model="ruleForm.password"   minlength="3" maxlength="60" show-password></el-input>
+      </el-form-item>
+      <el-form-item label="确认密码" required>
+        <el-input type="password" v-model="password1"   minlength="3" maxlength="60" @blur="check1()" show-password></el-input>
       </el-form-item>
       <el-form-item label="性别" prop="sex">
         <el-radio v-model="ruleForm.sex" label="男" value="男" name="sex">男</el-radio>
@@ -87,6 +90,7 @@
         identifyCode: '',
         checkCode:"",
         radio: "",
+        password1:'',
         ruleForm: {
           username: "",
           realname: "",
@@ -94,24 +98,28 @@
           sex:"男",
           code:""
         },
-        rules: {
+        rules1: {
           username: [
             { required: true, message: '请输入您的用户名', trigger: 'blur' },
             { min: 3, max: 40, message: '长度在 3 到 40 个字符' }
           ],
           realname: [
-            { required: true, message: '请输入真实姓名', trigger: 'blur' },
+            { required: true, message: '请输入您的真实姓名', trigger: 'blur' },
             { min: 2, max: 40, message: '长度在 2 到 40 个字符'}
           ],
           password: [
-            { required: true, message: '请输入密码', trigger: 'blur' },
+            { required: true, message: '请输入您的密码', trigger: 'blur' },
+            { min: 3, max: 60, message: '长度在 3 到 60 个字符' }
+          ],
+          password1: [
+            // { required: true, message: '请再次输入您的密码', trigger: 'blur' },
             { min: 3, max: 60, message: '长度在 3 到 60 个字符' }
           ],
           // sex: [
           //   { required: true },
           // ],
           code: [
-            { required: true, message: '请输入认证码', trigger: 'blur' },
+            { required: true, message: '请输入您的认证码', trigger: 'blur' },
           ],
         },
       };
@@ -138,8 +146,20 @@
           this.identifyCode += this.identifyCodes[this.randomNum(0, this.identifyCodes.length)]
         }
       },
+      check1() {
+        if(this.password1!=this.ruleForm.password){
+          // this.$message({
+          //       type: "warning",
+          //       message: "两次输入的密码不对应！",             
+          //       });
+          this.$alert('两次输入的密码不对应!', 'warning', {
+                  confirmButtonText: '确定',
+                });
+        }else{
 
-      check(username){
+        }
+      },
+      check(){
         axios({
               method: "post",          
               url:"http://localhost:8088/staffManage/userexist?username="+this.ruleForm.username,
@@ -147,9 +167,12 @@
               // console.log(res)
               // console.log(res.data.code)
               if(res.data.code == 200){ //100代表不存在，200代表存在
-                this.$message({
-                type: "warning",
-                message: "改用户名已存在,请修改用户名！",             
+                // this.$message({
+                // type: "warning",
+                // message: "用户名已存在,请修改用户名！",             
+                // });
+                this.$alert('用户名已存在,请修改用户名!', 'warning', {
+                  confirmButtonText: '确定',
                 });
               }
             });
@@ -203,7 +226,7 @@
                 message: "验证码错误",
                 type: "warning"
           });
-          this.createCode();
+          this.refreshCode ();
           return false;
         };
             //将注册数据传给后台
@@ -223,12 +246,12 @@
 
               //注册成功后传回数据
               if(res.data == 1){
-                this.$message({
-                type: "success",
-                message: "注册成功",
-                
+                this.$alert('恭喜您成功注册成为系统用户!', '注册成功', {
+                  confirmButtonText: '确定',
+                  callback: action => {
+                    this.$router.push("login");
+                  }
                 });
-                this.$router.push("login");
               }else{
                 this.$message({
                   type: "error",

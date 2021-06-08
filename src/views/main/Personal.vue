@@ -54,11 +54,11 @@
                 ref="perform" 
                 :model="perform">
         <el-form-item label="用户名" prop="username">
-          <el-input type="text" v-model="perform.username" @keyup.native="onlyChianeseEn1"
+          <el-input type="text" v-model="perform.username" @keypress.native="onlyChianeseEn1"
             placeholder="输入新的用户名" ></el-input>
         </el-form-item>
         <el-form-item label="真实姓名" prop="realname">
-          <el-input type="text" v-model="perform.realname" @keyup.native="onlyChianeseEn"
+          <el-input type="text" v-model="perform.realname" @keypress.native="onlyChianeseEn"
             placeholder="输入新的真实姓名" ></el-input>
         </el-form-item>
         <el-form-item label="性别" prop="sex">
@@ -96,6 +96,7 @@
           password: sessionStorage.getItem("password"),
           realname: sessionStorage.getItem("realname"),
           sex: sessionStorage.getItem("sex"),
+          power: sessionStorage.getItem("power"),
         },
         userGet:{
           inputUsername:"",
@@ -239,6 +240,17 @@
             }                                 
           })
       },
+    },
+    mounted(){
+      if (sessionStorage.getItem("username") == null) {
+        this.$message({
+          type: "error",
+          message: "未登录，不能直接访问员工管理系统！",             
+        });
+        this.$router.push('/')
+        }else{
+           
+        } 
     }
   }
 </script>

@@ -1,12 +1,12 @@
 <template>
   <div class="home-con">
-    <h2 class="home-label">欢迎用户  {{username}}、</h2>
+    <h2 class="home-label">欢迎{{power}}  {{$store.state.username}}、</h2>
     <h2 class="sys">进入员工管理系统!</h2>
     <div class="d-label">
       <h3>系统运用技术的介绍：</h3>
-      <p class="p1">前端：主要使用vue搭配element-ui</p>
-      <p class="p1">后端：主要使用ssm框架</p>
-      <p class="p1">数据库：mysql</p>
+      <p class="p1">前端：使用Vuejs</p>
+      <p class="p1">后端：使用Java的SSM框架</p>
+      <p class="p1">数据库：Mysql</p>
     </div>
     <img src="@/assets/home-img.jpg" alt="" class="h-img">
   </div>
@@ -17,9 +17,20 @@
     name: 'Home',
     data() {
       return {
-        username: sessionStorage.getItem("username")
+        power: sessionStorage.getItem("power")
       }
-    }
+    },
+    mounted() {
+      if (sessionStorage.getItem("username") == null) {
+        this.$message({
+          type: "error",
+          message: "未登录，不能直接访问员工管理系统！",             
+        });
+        this.$router.push('/')
+        }else{
+           
+        }       
+    },
   }
 </script>
 

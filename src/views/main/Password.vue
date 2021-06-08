@@ -126,7 +126,19 @@
         this.userGet.inputUsername = "";
         this.userGet.inputPassword = "";
         this.userGet.inputNewpassword = "";
+        this.userGet.inputTestpassword = "";
       },
+    },
+    mounted(){
+      if (sessionStorage.getItem("username") == null) {
+        this.$message({
+          type: "error",
+          message: "未登录，不能直接访问员工管理系统！",             
+        });
+        this.$router.push('/')
+        }else{
+           
+        } 
     }
   }
 </script>

@@ -12,10 +12,11 @@
         <el-button type="primary"  @click="search">搜索</el-button>
       </el-form-item>
       <el-form-item>
-        <el-button @click="reset">重置</el-button>
+        <el-button @click="download" class="print">导出</el-button>
       </el-form-item>
       
     </el-form>
+    
     <!-- <el-button type="primary" class="add" @click="addDept">添加</el-button> -->
     <el-table
     height="100%"
@@ -108,6 +109,7 @@
 
 <script>
   import axios from 'axios'
+  import {formatJson,export_json_to_excel} from '../../excel/Export2Excel'
   export default {
     name: 'Dept',
     data(){
@@ -115,6 +117,7 @@
         title: '',
         inline: false,
         dept: [],
+        de: [],
         isShow: false,
         config: {
           page: 1,
@@ -153,6 +156,15 @@
       }
     },
     mounted() {
+      if (sessionStorage.getItem("username") == null) {
+        this.$message({
+          type: "error",
+          message: "未登录，不能直接访问员工管理系统！",             
+        });
+        this.$router.push('/')
+        }else{
+           
+        };
       this.getDept();
       axios.post("http://localhost:8088/staffManage/getempAll").then(res => {
         // console.log(res);
@@ -163,9 +175,30 @@
       })
     },
     methods: {
-      reset(){
-        this.deptinfo1 = {};
-        this.getDept();
+      download() {
+        let header = ['did', 'dname', 'manage'];
+        axios({
+          method: "post",
+          url: "http://localhost:8088/staffManage/getdeptsAll",
+        }).then((res) => {
+          this.de = res.data.map((item) => {
+            return item;
+          });
+          require.ensure([], () => {
+        　　　const tHeader = ['部门号', '部门名称', '部门主管'];
+        　　　// 上面设置Excel的表格第一行的标题
+        　　　const filterVal = ['did', 'dname', 'manage'];
+        　　　// 上面是对象的属性
+        　　　const list = this.de.map(item => {
+                return item;
+              });  //把data里的tableData存到list
+        　　　const data = this.formatJson(filterVal, list);
+        　　　export_json_to_excel(tHeader, data, '部门信息');
+        　　})
+        });　
+      },
+      formatJson(filterVal, jsonData) {
+        return jsonData.map(v => filterVal.map(j => v[j]))
       },
       getDept() {
         axios.post("http://localhost:8088/staffManage/getdepts").then(res => {
@@ -251,9 +284,8 @@
           } else {
             // alert("删除失败！该部门下还有员工，请将员工换到其他部门或者删除再来删除部门！");
             this.$alert('该部门下还有员工，请将员工换到其他部门或者删除再来删除部门！', '删除失败！', {
-          confirmButtonText: '确定',
-          
-        });
+              confirmButtonText: '确定',    
+            });
           }
         }).catch(reject => {
          
@@ -286,9 +318,10 @@
             this.config.loading = false;
             if(this.config.total == 0){
               this.$message({
-              type: 'warning',
-              message: '没有查找到该部门'
+                type: 'warning',
+                message: '没有查找到该部门'
               }); 
+              this.getDept();
             }
           }).catch(re => {
             this.$message({
@@ -355,5 +388,7 @@
   .add{
     margin-bottom: 5px;
   }
-  
+  .print {
+    margin-left: 500%;
+  }
 </style>

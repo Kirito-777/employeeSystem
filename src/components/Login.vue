@@ -114,6 +114,7 @@
                 sessionStorage.setItem("realname",res.data.data.User.realname)
                 sessionStorage.setItem("password",res.data.data.User.password)
                 sessionStorage.setItem("sex",res.data.data.User.sex)
+                sessionStorage.setItem("power",res.data.data.User.power)
                 // this.$store.state.user.id = res.data.data.User.id
                 this.$store.state.username = res.data.data.User.username
                 // this.$store.state.user.realname = res.data.data.User.realname
@@ -130,9 +131,8 @@
                 this.$router.push("Main");
               } else {
                 // console.log(res.data);
-                this.$message({
-                  type:"warning",
-                  message: "登录失败，用户名或者密码输入错误",
+                this.$alert('用户名或者密码输入错误!', '登录失败', {
+                  confirmButtonText: '确定',
                 });
               }
             });

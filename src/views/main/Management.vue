@@ -21,8 +21,8 @@
       </div>
     </el-dialog>
     <div class="manage-header">
-      <el-button type="primary" @click="addUser" :disabled="trueOrFalse"
-        >+ 新增</el-button
+      <el-button type="primary" @click="addUser" v-if="trueOrFalse"
+        >新增</el-button
       >
       <common-form inline :formLabel="formLabel" :form="searchFrom">
         <el-button
@@ -30,7 +30,7 @@
           style="width: auto"
           @click="change();query(searchFrom.keyword,page)"
           >搜索</el-button>
-          <el-button @click="reset">重置</el-button>
+          <el-button @click="download" v-if="trueOrFalse" style="margin-left: 20px">导出</el-button>
       </common-form>
     </div>
     <!--依次是: 表格数据 表格标签数据 分页数据  列表方法 更新方法 删除方法-->
@@ -51,6 +51,7 @@
   import axios from "axios";
   import CommonForm from "../../components/CommonForm";
   import CommonTable from "../../components/CommonTable";
+  import {formatJson,export_json_to_excel} from '../../excel/Export2Excel'
   export default {
     name: 'Management',
     components: {
@@ -58,6 +59,15 @@
       CommonTable,
     },
     mounted() {
+      if (sessionStorage.getItem("username") == null) {
+        this.$message({
+          type: "error",
+          message: "未登录，不能直接访问员工管理系统！",             
+        });
+        this.$router.push('/')
+        }else{
+           
+        } ;
       axios.post("http://localhost:8088/staffManage/getdeptsAll").then(res => {
         // console.log(res.data);
         this.formLabel[3].opts= res.data.map((item) => {  
@@ -79,7 +89,7 @@
         isBack: false,
         dept: [],
         tableData: [],
-        trueOrFalse: sessionStorage.getItem("trueFalse") == "false",
+        trueOrFalse: sessionStorage.getItem("trueFalse") == "true",
         tableLabel: [
           {
             prop: "id",
@@ -211,12 +221,44 @@
             type: "input",
           },
         ],
+        emp: [],
       };
     },
     methods: {
-      reset() {
-        this.searchFrom = {};
-        this.getList();
+      download() {
+        let header = ["id", "name", "salary","age","dname","manage"];
+        axios({
+          method: "post",
+          url: "http://localhost:8088/staffManage/getempAll",
+        }).then((res) => {
+          this.emp = res.data.map((item) => {
+            let js = {};
+            js.id=item.id;
+            js.name=item.name;
+            js.age=item.age;
+            js.salary=item.salary;
+            if (item.dept!={}) {
+              js.dname = item.dept.dname;
+              js.manage = item.dept.manage;
+            }
+            return js;
+          });
+          require.ensure([], () => {
+        　　　const tHeader = ['id', 'name', 'age','salary','dname','manage'];
+        　　　// 上面设置Excel的表格第一行的标题
+        　　　const filterVal = ['id', 'name', 'age','salary','dname','manage'];
+        　　　// 上面是对象的属性
+        　　　const list = this.emp.map(item => {
+                return item;
+              });  //把data里的tableData存到list
+              // console.log(this.emp);
+        　　　const data = this.formatJson(filterVal, list);
+        　　　export_json_to_excel(tHeader, data, '员工信息');
+        　　})
+        });　
+      },
+      formatJson(filterVal, jsonData) {
+        return jsonData.map(v => filterVal.map(j => v[j]))
       },
       change()  {
         sessionStorage.setItem("queryTrueOrFalse",true)
@@ -339,7 +381,7 @@
               this.query();
             });
         } else {
-          console.log(this.operateForm);
+          // console.log(this.operateForm);
           axios
             .post("http://localhost:8088/staffManage/addemp", this.operateForm)
           .then((res) => {

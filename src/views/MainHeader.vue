@@ -21,7 +21,8 @@
           修改密码
         </el-menu-item>
       </el-menu>
-      <el-button type="text" slot="reference" class="user-name">用户名：{{$store.state.username}}<i :class="$store.state.amg"></i></el-button>
+      <el-button type="text" slot="reference" class="user-name">
+        {{power}}：{{$store.state.username}}<i :class="$store.state.amg"></i></el-button>
     </el-popover>
     <!-- <el-menu class="user-name " background-color="#45464b"
   text-color="#fff">
@@ -51,7 +52,7 @@
     },
     data() {
       return {
-        // username: sessionStorage.getItem("username")
+        power: sessionStorage.getItem("power"),
         nowTime: '',
         nowDate: '',
         amg: sessionStorage.getItem("amg")
@@ -84,7 +85,9 @@
             message: '成功退出系统!'
           });
           // this.$store.state.username = '';
+           sessionStorage.setItem("username",'');
           sessionStorage.setItem("trueFalse",false);
+          sessionStorage.clear() 
           this.$router.push("Login");
         }).catch(() => {
           this.$message({
